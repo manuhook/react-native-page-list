@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import React, { PureComponent } from "react";
-import { Dimensions, FlatList, InteractionManager, View, ViewPropTypes, Animated } from "react-native";
+import { Dimensions, FlatList, InteractionManager, View, ViewPropTypes, Animated, Easing } from "react-native";
 import { createResponder } from "react-native-easy-guesture-responder";
 import Scrolling from "react-native-scrolling";
 
