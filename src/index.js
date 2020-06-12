@@ -403,7 +403,7 @@ export default class PageList extends PureComponent {
                 {this.props.renderOverlay && this.props.renderOverlay()}
                 <View
                     {...this.props}
-                    style={[style, { flex: 1 }]}
+                    style={[style, { flex: 1, backgroundColor: 'transparent' }]}
                     {...gestureResponder}>
                     <Animated.View style={{
                         position: 'absolute',
@@ -416,7 +416,7 @@ export default class PageList extends PureComponent {
                     }} />
                     <FlatList
                         {...this.props.flatListProps}
-                        style={[{ flex: 1 }, scrollViewStyle,
+                        style={[{ flex: 1, backgroundColor: 'transparent' }, scrollViewStyle,
                         this.props.flatListProps.style
                         ]}
                         ref={(component) => (this.innerFlatList = component)}
