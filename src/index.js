@@ -1,14 +1,8 @@
-import React, { PureComponent } from "react";
-import {
-    View,
-    FlatList,
-    ViewPropTypes,
-    InteractionManager,
-    Dimensions
-} from "react-native";
 import PropTypes from "prop-types";
-import Scrolling from "react-native-scrolling";
+import React, { PureComponent } from "react";
+import { Dimensions, FlatList, InteractionManager, View, ViewPropTypes } from "react-native";
 import { createResponder } from "react-native-easy-guesture-responder";
+import Scrolling from "react-native-scrolling";
 
 const MIN_FLING_VELOCITY = 0.5;
 
@@ -24,6 +18,8 @@ export default class PageList extends PureComponent {
             ? ViewPropTypes.style
             : View.propTypes.style,
         scrollEnabled: PropTypes.bool,
+        backgroundColor: PropTypes.string,
+        renderOverlay: PropTypes.func,
         renderItem: PropTypes.func,
         data: PropTypes.array,
         renderPage: PropTypes.func,
@@ -45,7 +41,8 @@ export default class PageList extends PureComponent {
         pageDataArray: [],
         sensitiveScroll: true,
         removeClippedSubviews: true,
-        flatListProps: {}
+        flatListProps: {},
+        backgroundColor: 'black'
     };
 
     // Do not initialize to make onPageSelected(0) be dispatched
@@ -54,9 +51,11 @@ export default class PageList extends PureComponent {
     activeGesture = false;
     gestureResponder = undefined;
 
+    fadeAnim = new Animated.Value(1)
+
     state = { width, height };
 
-    constructor (props) {
+    constructor(props) {
         super(props);
 
         this.onLayout = this.onLayout.bind(this);
@@ -77,7 +76,7 @@ export default class PageList extends PureComponent {
         });
     }
 
-    createScrolling () {
+    createScrolling() {
         return new Scrolling(true, (dx, dy, scroller) => {
             if (dx === 0 && dy === 0 && scroller.isFinished()) {
                 if (!this.activeGesture) {
@@ -110,7 +109,7 @@ export default class PageList extends PureComponent {
         });
     }
 
-    componentDidMount () {
+    componentDidMount() {
         // FlatList is set to render at initialPage.
         // The scroller we use is not aware of this.
         // Let it know by simulating most of what happens in scrollToPage()
@@ -135,7 +134,7 @@ export default class PageList extends PureComponent {
         });
     }
 
-    componentDidUpdate (prevProps) {
+    componentDidUpdate(prevProps) {
         const pageDataArray = this.props.pageDataArray.length > 0
             ? this.props.pageDataArray
             : this.props.data;
@@ -152,7 +151,7 @@ export default class PageList extends PureComponent {
         }
     }
 
-    onLayout (e) {
+    onLayout(e) {
         // eslint-disable-next-line no-shadow
         let { width, height } = e.nativeEvent.layout;
         let sizeChanged = this.state.width !== width ||
@@ -163,37 +162,37 @@ export default class PageList extends PureComponent {
         }
     }
 
-    onResponderGrant (evt, gestureState) {
+    onResponderGrant(evt, gestureState) {
         // this.scroller.forceFinished(true);
         this.activeGesture = true;
         this.onPageScrollStateChanged("dragging");
     }
 
-    onResponderMove (evt, gestureState) {
+    onResponderMove(evt, gestureState) {
         let dx = gestureState.moveX - gestureState.previousMoveX;
         this.scrollByOffset(dx);
     }
 
-    onResponderRelease (evt, gestureState, disableSettle) {
+    onResponderRelease(evt, gestureState, disableSettle) {
         this.activeGesture = false;
         if (!disableSettle) {
             this.settlePage(gestureState.vx);
         }
     }
 
-    onPageChanged (page) {
+    onPageChanged(page) {
         if (this.currentPage !== page) {
             this.currentPage = page;
             this.props.onPageSelected && this.props.onPageSelected(page);
         }
     }
 
-    onPageScrollStateChanged (state) {
+    onPageScrollStateChanged(state) {
         this.props.onPageScrollStateChanged &&
             this.props.onPageScrollStateChanged(state);
     }
 
-    settlePage (vx) {
+    settlePage(vx) {
         const { sensitiveScroll } = this.props;
         const pageDataArray = this.props.pageDataArray.length > 0
             ? this.props.pageDataArray
@@ -227,14 +226,14 @@ export default class PageList extends PureComponent {
         }
     }
 
-    getScrollOffsetOfPage (page) {
+    getScrollOffsetOfPage(page) {
         const pageDataArray = this.props.pageDataArray.length > 0
             ? this.props.pageDataArray
             : this.props.data;
         return this.getItemLayout(pageDataArray, page).offset;
     }
 
-    flingToPage (page, velocityX) {
+    flingToPage(page, velocityX) {
         this.onPageScrollStateChanged("settling");
 
         page = this.validPage(page);
@@ -254,7 +253,15 @@ export default class PageList extends PureComponent {
         );
     }
 
-    scrollToPage (page, immediate) {
+    setFade(value) {
+        this.fadeAnim.setValue(value)
+    }
+
+    resetFade() {
+        Animated.timing(this.fadeAnim, { useNativeDriver: true, toValue: 1, duration: 200, easing: Easing.inOut(Easing.ease) }).start()
+    }
+
+    scrollToPage(page, immediate) {
         this.onPageScrollStateChanged("settling");
 
         page = this.validPage(page);
@@ -289,11 +296,11 @@ export default class PageList extends PureComponent {
         }
     }
 
-    scrollByOffset (dx) {
+    scrollByOffset(dx) {
         this.scroller.startScroll(this.scroller.getCurrX(), 0, -dx, 0, 0);
     }
 
-    validPage (page) {
+    validPage(page) {
         const pageDataArray = this.props.pageDataArray.length > 0
             ? this.props.pageDataArray
             : this.props.data;
@@ -305,12 +312,12 @@ export default class PageList extends PureComponent {
         return page;
     }
 
-    getScrollOffsetFromCurrentPage () {
+    getScrollOffsetFromCurrentPage() {
         return this.scroller.getCurrX() -
             this.getScrollOffsetOfPage(this.currentPage);
     }
 
-    getItemLayout (data, index) {
+    getItemLayout(data, index) {
         // this method is called "getItemLayout", but it is not actually used
         // as the "getItemLayout" function for the FlatList. We use it within
         // the code on this page though. The reason for this is that working
@@ -324,14 +331,14 @@ export default class PageList extends PureComponent {
         };
     }
 
-    keyExtractor (item, index) {
+    keyExtractor(item, index) {
         if (item.key) {
             return item.key.toString();
         }
         return index.toString();
     }
 
-    renderRow ({ item, index }) {
+    renderRow({ item, index }) {
         // eslint-disable-next-line no-shadow
         const { width, height } = this.state;
         let page = this.props.renderPage
@@ -359,7 +366,7 @@ export default class PageList extends PureComponent {
                         height: height,
                         alignItems: "flex-end"
                     }}>
-                        { element }
+                        {element}
                     </View>
                 </View>
             );
@@ -368,7 +375,7 @@ export default class PageList extends PureComponent {
         }
     }
 
-    render () {
+    render() {
         // eslint-disable-next-line no-shadow
         const { width, height } = this.state;
         const {
@@ -392,38 +399,50 @@ export default class PageList extends PureComponent {
         }
 
         return (
-            <View
-                {...this.props}
-                style={[style, { flex: 1 }]}
-                {...gestureResponder}>
-                <FlatList
-                    {...this.props.flatListProps}
-                    style={[{ flex: 1 }, scrollViewStyle,
+            <>
+                {this.props.renderOverlay && this.props.renderOverlay()}
+                <View
+                    {...this.props}
+                    style={[style, { flex: 1 }]}
+                    {...gestureResponder}>
+                    <Animated.View style={{
+                        position: 'absolute',
+                        opacity: this.fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] }),
+                        top: 0,
+                        left: 0,
+                        bottom: 0,
+                        right: 0,
+                        backgroundColor: this.props.backgroundColor || 'black',
+                    }} />
+                    <FlatList
+                        {...this.props.flatListProps}
+                        style={[{ flex: 1 }, scrollViewStyle,
                         this.props.flatListProps.style
-                    ]}
-                    ref={(component) => (this.innerFlatList = component)}
-                    keyExtractor={this.keyExtractor}
-                    scrollEnabled={false}
-                    horizontal={true}
-                    data={pageDataArray}
-                    renderItem={this.renderRow}
-                    onLayout={this.onLayout}
-                    removeClippedSubviews={this.props.removeClippedSubviews}
-                    initialNumToRender={this.props.initialNumToRender}
+                        ]}
+                        ref={(component) => (this.innerFlatList = component)}
+                        keyExtractor={this.keyExtractor}
+                        scrollEnabled={false}
+                        horizontal={true}
+                        data={pageDataArray}
+                        renderItem={this.renderRow}
+                        onLayout={this.onLayout}
+                        removeClippedSubviews={this.props.removeClippedSubviews}
+                        initialNumToRender={this.props.initialNumToRender}
 
-                    // use contentOffset instead of
-                    // initialScrollIndex so that we don"t have
-                    // to use the buggy "getItemLayout" prop.
-                    // eslint-disable-next-line radix
-                    contentOffset = {{
-                        x: this.getScrollOffsetOfPage(
-                            // eslint-disable-next-line
-                            parseInt(this.props.initialPage)
-                        ),
-                        y: 0
-                    }}
-                />
-            </View>
+                        // use contentOffset instead of
+                        // initialScrollIndex so that we don"t have
+                        // to use the buggy "getItemLayout" prop.
+                        // eslint-disable-next-line radix
+                        contentOffset={{
+                            x: this.getScrollOffsetOfPage(
+                                // eslint-disable-next-line
+                                parseInt(this.props.initialPage)
+                            ),
+                            y: 0
+                        }}
+                    />
+                </View>
+            </>
         );
     }
 }
