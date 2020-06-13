@@ -42,7 +42,6 @@ export default class PageList extends PureComponent {
         sensitiveScroll: true,
         removeClippedSubviews: true,
         flatListProps: {},
-        backgroundColor: 'black'
     };
 
     // Do not initialize to make onPageSelected(0) be dispatched
@@ -397,14 +396,14 @@ export default class PageList extends PureComponent {
         if (!scrollEnabled || pageDataArray.length <= 0) {
             gestureResponder = {};
         }
-
+        console.log(this.props.backgroundColor)
         return (
             <>
-                {this.props.renderOverlay && this.props.renderOverlay()}
                 <View
                     {...this.props}
                     style={[style, { flex: 1, backgroundColor: 'transparent' }]}
-                    {...gestureResponder}>
+                    {...gestureResponder}
+                >
                     <Animated.View style={{
                         position: 'absolute',
                         opacity: this.fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] }),
@@ -442,6 +441,18 @@ export default class PageList extends PureComponent {
                         }}
                     />
                 </View>
+                <Animated.View
+                    pointerEvents='box-none'
+                    style={{
+                        position: 'absolute',
+                        opacity: this.fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] }),
+                        top: 0,
+                        left: 0,
+                        bottom: 0,
+                        right: 0,
+                    }} >
+                    {this.props.renderOverlay && this.props.renderOverlay()}
+                </Animated.View>
             </>
         );
     }
