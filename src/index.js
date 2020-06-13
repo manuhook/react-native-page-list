@@ -396,7 +396,7 @@ export default class PageList extends PureComponent {
         if (!scrollEnabled || pageDataArray.length <= 0) {
             gestureResponder = {};
         }
-        console.log(this.props.backgroundColor)
+
         return (
             <>
                 <View
