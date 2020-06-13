@@ -450,6 +450,7 @@ export default class PageList extends PureComponent {
                         left: 0,
                         bottom: 0,
                         right: 0,
+                        backgroundColor: 'transparent',
                     }} >
                     {this.props.renderOverlay && this.props.renderOverlay()}
                 </Animated.View>
