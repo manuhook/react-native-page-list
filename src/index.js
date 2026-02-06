@@ -352,8 +352,7 @@ export default class PageList extends PureComponent {
         };
         const style = page.props.style ? [page.props.style, layout] : layout;
 
-        let newProps = { ...page.props, ref: page.ref, style };
-        const element = React.createElement(page.type, newProps);
+        const element = React.cloneElement(page, { style });
 
         if (this.props.pageMargin > 0 && index > 0) {
             // Do not using margin style to implement pageMargin.
